@@ -39,7 +39,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <ClerkProvider appearance={clerkAppearanceObject}>
+      <ClerkProvider
+        appearance={clerkAppearanceObject}
+        publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      >
         <body className={`min-h-screen flex flex-col antialiased`}>
           <Header />
           {children}
