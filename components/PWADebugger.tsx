@@ -48,7 +48,6 @@ export const PWADebugger = () => {
           serviceWorkerStatus: "checking",
         };
 
-        // Check manifest
         try {
           const manifestResponse = await fetch("/manifest.json");
           if (manifestResponse.ok) {
@@ -59,7 +58,6 @@ export const PWADebugger = () => {
           console.error("Manifest check failed:", error);
         }
 
-        // Check service worker status
         if (pwaStatus.hasServiceWorker) {
           const registration = await navigator.serviceWorker.getRegistration();
           if (registration) {
@@ -79,7 +77,6 @@ export const PWADebugger = () => {
           pwaStatus.serviceWorkerStatus = "not supported";
         }
 
-        // Check if installable
         const beforeInstallPromptHandler = () => {
           pwaStatus.isInstallable = true;
           setStatus({ ...pwaStatus });
@@ -93,7 +90,6 @@ export const PWADebugger = () => {
         setStatus(pwaStatus);
         setLoading(false);
 
-        // Cleanup
         return () => {
           window.removeEventListener(
             "beforeinstallprompt",
@@ -282,6 +278,80 @@ export const PWADebugger = () => {
           </div>
         </div>
 
+        {/* Debug Actions */}
+        <div className="space-y-2">
+          <h4 className="font-medium">Debug Actions</h4>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Refresh Page
+            </button>
+            <button
+              onClick={async () => {
+                if ("serviceWorker" in navigator) {
+                  const registration =
+                    await navigator.serviceWorker.getRegistration();
+                  if (registration) {
+                    await registration.update();
+                    console.log("Service Worker update requested");
+                    setTimeout(() => window.location.reload(), 1000);
+                  }
+                }
+              }}
+              className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+            >
+              Update SW
+            </button>
+            <button
+              onClick={() => {
+                if ("caches" in window) {
+                  caches
+                    .keys()
+                    .then((names) => {
+                      names.forEach((name) => {
+                        caches.delete(name);
+                      });
+                    })
+                    .then(() => {
+                      console.log("All caches cleared");
+                      window.location.reload();
+                    });
+                }
+              }}
+              className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Clear Cache
+            </button>
+          </div>
+        </div>
+
+        {/* Troubleshooting */}
+        <div className="space-y-2">
+          <h4 className="font-medium">Troubleshooting</h4>
+          <div className="text-sm space-y-1">
+            {status.serviceWorkerStatus === "registered" && (
+              <p className="text-amber-600">
+                ⚠️ Service Worker registered but not active yet. Try refreshing
+                or clearing cache.
+              </p>
+            )}
+            {!status.isInstallable && !status.isInstalled && (
+              <div className="space-y-1">
+                <p>Install button not showing? Try:</p>
+                <ul className="list-disc list-inside ml-2 space-y-1">
+                  <li>Make sure you're on HTTPS or localhost</li>
+                  <li>Check that manifest.json is accessible</li>
+                  <li>Verify service worker is registered and active</li>
+                  <li>Try in Chrome or Edge (best PWA support)</li>
+                  <li>Clear browser cache and reload</li>
+                  <li>Make sure the app isn't already installed</li>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
         {/* Troubleshooting */}
         <div className="space-y-2">
           <h4 className="font-medium">Troubleshooting</h4>

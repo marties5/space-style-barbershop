@@ -45,7 +45,7 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development", 
+  disable: process.env.NODE_ENV === "development", // Disable in dev for easier debugging
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,

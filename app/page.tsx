@@ -1,3 +1,4 @@
+import { InstallButton } from "@/components/InstallButton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -64,6 +65,7 @@ export default function HomePage() {
                 Get Started
               </Button>
             </Link>
+            <InstallButton />
           </div>
         </div>
       </section>
