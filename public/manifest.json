@@ -6,11 +6,12 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",  
+  "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "categories": ["business", "lifestyle"],
   "lang": "en",
   "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-72x72.png",

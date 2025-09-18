@@ -8,6 +8,7 @@ import { templateMetadata } from "./_template/content/metadata";
 import "./globals.css";
 import { PWADebugger } from "@/components/PWADebugger";
 import ServiceWorkerRegister from "@/components/ServiceWorker";
+import PWAInstallManager from "@/components/PWAInstallManager";
 
 // Enhanced metadata for PWA
 export const metadata: Metadata = {
@@ -188,8 +189,10 @@ export default function RootLayout({
           {children}
           <DevtoolsWatcher />
           <Toaster />
-          <ServiceWorkerRegister/>
+          <ServiceWorkerRegister />
           <PWADebugger />
+          {/* PWA Install Banner */}
+          <PWAInstallManager />
         </body>
       </ClerkProvider>
     </html>
