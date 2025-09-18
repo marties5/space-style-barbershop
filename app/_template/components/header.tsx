@@ -1,7 +1,8 @@
-import React from 'react'
-import LogoutButton from '@/app/components/logoutButton'
+import LogoutButton from "@/components/logoutButton";
 export const Header = () => {
   return (
-    <div><LogoutButton/></div>
-  )
-}
+    <div>
+      <LogoutButton />
+    </div>
+  );
+};
