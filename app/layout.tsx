@@ -1,4 +1,7 @@
 import DevtoolsWatcher from "@/components/DevtoolsWatcher";
+import { PWADebugger } from "@/components/PWADebugger";
+import PWAInstallManager from "@/components/PWAInstallManager";
+import ServiceWorkerRegister from "@/components/ServiceWorker";
 import { Toaster } from "@/components/ui/sonner";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Appearance } from "@clerk/types";
@@ -6,9 +9,6 @@ import { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { templateMetadata } from "./_template/content/metadata";
 import "./globals.css";
-import { PWADebugger } from "@/components/PWADebugger";
-import ServiceWorkerRegister from "@/components/ServiceWorker";
-import PWAInstallManager from "@/components/PWAInstallManager";
 
 // Enhanced metadata for PWA
 export const metadata: Metadata = {
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
     "apple-mobile-web-app-status-bar-style": "black-translucent",
     "apple-mobile-web-app-title": "Space Style Barber",
     "application-name": "Space Style Barber",
-    "msapplication-TileColor": "#2563eb",
+    "msapplication-TileColor": "#282828",
     "msapplication-config": "/browserconfig.xml",
   },
 };
 
 // Viewport configuration for PWA
 export const viewport: Viewport = {
-  themeColor: "#2563eb",
+  themeColor: "#282828",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
