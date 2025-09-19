@@ -9,7 +9,7 @@
 </p>
 <div align="center">
   <h1>
-    Next.js Clerk auth starter template
+   Space Style Barber
   </h1>
   <a href="https://www.npmjs.com/package/@clerk/clerk-js">
     <img alt="" src="https://img.shields.io/npm/dm/@clerk/clerk-js" />

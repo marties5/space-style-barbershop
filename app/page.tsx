@@ -23,7 +23,7 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/login">
+              <Link href="/sign-in">
                 <Button
                   variant="ghost"
                   size="sm"

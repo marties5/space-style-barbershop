@@ -76,10 +76,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
-        {/* PWA Meta Tags */}
         <link rel="manifest" href="/manifest.json" />
 
-        {/* Apple Touch Icons */}
         <link
           rel="apple-touch-icon"
           sizes="57x57"
