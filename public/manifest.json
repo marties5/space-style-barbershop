@@ -4,7 +4,7 @@
   "description": "Professional barber services and management system",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#282828",
