@@ -110,7 +110,7 @@ const dataListPartner = [
 
 const page = () => {
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen px-4">
       <div>
         <div className="flex justify-between">
           <h1 className="text-2xl font-semibold mb-6">Jasa</h1>

@@ -1,9 +1,9 @@
 "use server";
 
+import { generateTransactionNumber } from "@/lib/generateTransactionNumber";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-// Types untuk transaction
 interface TransactionItem {
   id: string;
   name: string;
@@ -45,15 +45,6 @@ interface TransactionResponse {
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
-function generateTransactionNumber(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const timestamp = now.getTime().toString().slice(-6);
-  return `TRX${year}${month}${day}${timestamp}`;
-}
-
 function serializeTransaction(transaction: any) {
   return {
     ...transaction,
@@ -69,48 +60,38 @@ function serializeTransaction(transaction: any) {
   };
 }
 
-/**
- * Fungsi untuk membuat transaction baru beserta items dan update daily sales
- * Support untuk multiple items
- */
 export async function createTransaction(data: CreateTransactionData) {
   try {
-    // Validasi input
     if (!data.items || data.items.length === 0) {
       throw new Error("Transaction harus memiliki minimal 1 item");
     }
     console.log("data ubmited : ", data);
-    // Tentukan transaction type berdasarkan items
     const hasService = data.items.some((item) => item.item_type === "service");
     const hasProduct = data.items.some((item) => item.item_type === "product");
 
     let transactionType: string;
     if (hasService && hasProduct) {
-      transactionType = "mixed"; // Kombinasi service dan product
+      transactionType = "mixed";
     } else if (hasService) {
-      transactionType = "service"; // Hanya service
+      transactionType = "service";
     } else {
-      transactionType = "product"; // Hanya product
+      transactionType = "product";
     }
 
-    // Hitung subtotal, tax, dan total
     const subtotal = data.items.reduce(
       (sum, item) => sum + item.price * item.count,
       0
     );
-    const taxRate = 0.1; // 10% tax
+    const taxRate = 0;
     const taxAmount = subtotal * taxRate;
-    const discountAmount = 0; // Default no discount
+    const discountAmount = 0;
     const totalAmount = subtotal + taxAmount - discountAmount;
     const transactionNumber = generateTransactionNumber();
 
-    // Mulai database transaction
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Buat transaction record dengan transaction_type
       const transaction = await tx.transaction.create({
         data: {
           transactionNumber: transactionNumber,
-          // Use customer relation instead of customerId
           customer: data.customer_id
             ? { connect: { id: data.customer_id } }
             : undefined,
@@ -126,7 +107,6 @@ export async function createTransaction(data: CreateTransactionData) {
         },
       });
 
-      // 2. Buat transaction items (tetap sama)
       const transactionItems = await Promise.all(
         data.items.map((item) =>
           tx.transactionItem.create({
@@ -143,7 +123,6 @@ export async function createTransaction(data: CreateTransactionData) {
         )
       );
 
-      // 3. Update daily sales (sudah ada logic untuk service/product count)
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -189,11 +168,10 @@ export async function createTransaction(data: CreateTransactionData) {
       };
     });
 
-    revalidatePath("/transactions");
+    revalidatePath("/dashboard/transactions");
     revalidatePath("/dashboard");
     revalidatePath("/daily-sales");
 
-    // Convert Decimal fields to numbers for serialization
     const serializedResult = {
       transaction: {
         ...result.transaction,
@@ -231,9 +209,6 @@ export async function createTransaction(data: CreateTransactionData) {
   }
 }
 
-/**
- * Legacy function untuk single item transaction (compatibility)
- */
 export async function createTransactionSingle(
   data: TransactionDataWithPayment
 ): Promise<TransactionResponse> {
@@ -334,7 +309,7 @@ async function executeTransaction(params: {
           taxAmount: params.taxAmount,
           discountAmount: params.discountAmount,
           totalAmount: params.totalAmount,
-          transaction_type : params.transaction_type,
+          transaction_type: params.transaction_type,
           paymentMethod: params.paymentMethod,
           paymentStatus: "completed",
           notes: `Transaksi untuk ${params.goodData.name}`,
@@ -382,9 +357,9 @@ async function executeTransaction(params: {
       return { transaction, transactionItem };
     },
     {
-      maxWait: 5000, // 5 seconds max wait
-      timeout: 10000, // 10 seconds timeout
-      isolationLevel: "ReadCommitted", // Less restrictive isolation
+      maxWait: 5000,
+      timeout: 10000,
+      isolationLevel: "ReadCommitted",
     }
   );
 }
@@ -525,9 +500,6 @@ export async function createTransactionWithRetry(
   };
 }
 
-/**
- * Fungsi untuk mendapatkan transaction berdasarkan ID
- */
 export async function getTransactionById(
   transactionId: string
 ): Promise<TransactionResponse> {
@@ -574,9 +546,6 @@ export async function getTransactionById(
   }
 }
 
-/**
- * Fungsi untuk mendapatkan semua transactions dengan pagination
- */
 export async function getTransactions(page: number = 1, limit: number = 10) {
   try {
     const skip = (page - 1) * limit;
@@ -627,9 +596,6 @@ export async function getTransactions(page: number = 1, limit: number = 10) {
   }
 }
 
-/**
- * Fungsi untuk mendapatkan daily sales berdasarkan staff dan tanggal
- */
 export async function getDailySales(staffId: number, date?: Date) {
   try {
     const targetDate = date || new Date();
@@ -661,9 +627,6 @@ export async function getDailySales(staffId: number, date?: Date) {
   }
 }
 
-/**
- * Fungsi untuk mendapatkan ringkasan penjualan berdasarkan range tanggal
- */
 export async function getSalesReport(
   startDate: Date,
   endDate: Date,

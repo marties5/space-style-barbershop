@@ -19,7 +19,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <Scissors className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
               <span className="text-lg sm:text-xl font-bold text-foreground">
-                SpaceStyle
+                Barber
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
@@ -149,12 +149,10 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0">
             <div className="flex items-center gap-2">
               <Scissors className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />
-              <span className="text-base sm:text-lg font-semibold">
-                SpaceStyle
-              </span>
+              <span className="text-base sm:text-lg font-semibold">Barber</span>
             </div>
             <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-right">
-              © 2025 SpaceStyle. All rights reserved.
+              © 2025 Barber. All rights reserved.
             </div>
           </div>
         </div>

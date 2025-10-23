@@ -45,7 +45,7 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development", // Disable in dev for easier debugging
+  disable: process.env.NODE_ENV === "development",
   runtimeCaching: [
     {
       urlPattern: /^https?.*/,
@@ -54,11 +54,14 @@ const pwaConfig = withPWA({
         cacheName: "offlineCache",
         expiration: {
           maxEntries: 50,
-          maxAgeSeconds: 24 * 60 * 60, 
+          maxAgeSeconds: 24 * 60 * 60,
         },
       },
     },
   ],
+  fallbacks: {
+    document: "/app/offline/page.tsx",
+  },
   buildExcludes: [/middleware-manifest\.json$/],
   maximumFileSizeToCacheInBytes: 5000000, // 5MB
 });

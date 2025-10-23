@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { BarChart3, LayoutDashboard, Menu, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { InstallButton } from "../InstallButton";
 
 const navItems = [
   {
@@ -23,8 +22,18 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
+    title: "Operasional",
+    href: "/dashboard/operational",
+    icon: LayoutDashboard,
+  },
+  {
     title: "Users",
     href: "/dashboard/users",
+    icon: Users,
+  },
+  {
+    title: "Jasa",
+    href: "/dashboard/services",
     icon: Users,
   },
   {
@@ -40,6 +49,11 @@ const navItems = [
   {
     title: "Analytics",
     href: "/dashboard/analytics",
+    icon: BarChart3,
+  },
+  {
+    title: "testing",
+    href: "/dashboard/testing",
     icon: BarChart3,
   },
 ];
@@ -69,7 +83,6 @@ export function DashboardNav() {
           </Link>
         );
       })}
-    
     </nav>
   );
 }

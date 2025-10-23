@@ -1,23 +1,24 @@
+import ConnectionDetector from "@/components/ConnectionDetector";
 import DevtoolsWatcher from "@/components/DevtoolsWatcher";
-import { PWADebugger } from "@/components/PWADebugger";
+import DisableZoom from "@/components/DisabledZoom";
 import PWAInstallManager from "@/components/PWAInstallManager";
 import ServiceWorkerRegister from "@/components/ServiceWorker";
 import { Toaster } from "@/components/ui/sonner";
+import { templateMetadata } from "@/public/metadata";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Appearance } from "@clerk/types";
 import { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { templateMetadata } from "./_template/content/metadata";
 import "./globals.css";
+import Providers from "@/lib/ProggressBarProviders";
 
-// Enhanced metadata for PWA
 export const metadata: Metadata = {
   ...templateMetadata,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Space Style Barber",
+    title: "Applikasi barber",
   },
   formatDetection: {
     telephone: false,
@@ -26,14 +27,13 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Space Style Barber",
-    "application-name": "Space Style Barber",
+    "apple-mobile-web-app-title": "Aplikasi Barber",
+    "application-name": "Aplikasi Barber",
     "msapplication-TileColor": "#282828",
     "msapplication-config": "/browserconfig.xml",
   },
 };
 
-// Viewport configuration for PWA
 export const viewport: Viewport = {
   themeColor: "#282828",
   width: "device-width",
@@ -76,6 +76,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        ></meta>
+
         <link rel="manifest" href="/manifest.json" />
 
         <link
@@ -124,7 +129,6 @@ export default function RootLayout({
           href="/icons/apple-touch-icon-180x180.png"
         />
 
-        {/* Favicon */}
         <link
           rel="icon"
           type="image/png"
@@ -139,13 +143,11 @@ export default function RootLayout({
         />
         <link rel="shortcut icon" href="/favicon.ico" />
 
-        {/* Windows Tile */}
         <meta
           name="msapplication-TileImage"
           content="/icons/ms-icon-144x144.png"
         />
 
-        {/* Splash screens for iOS */}
         <link
           rel="apple-touch-startup-image"
           href="/icons/splash-2048x2732.png"
@@ -183,14 +185,15 @@ export default function RootLayout({
         />
       </head>
       <ClerkProvider appearance={clerkAppearanceObject}>
-        <body className={`min-h-screen flex flex-col antialiased`}>
-          {children}
+        <body className={`min-h-screen flex flex-col antialiased `}>
+          <Providers> {children}</Providers>
+          {/* {children} */}
           <DevtoolsWatcher />
           <Toaster />
           <ServiceWorkerRegister />
-          <PWADebugger />
-          {/* PWA Install Banner */}
           <PWAInstallManager />
+          <ConnectionDetector />
+          <DisableZoom />
         </body>
       </ClerkProvider>
     </html>

@@ -1,16 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Download,
-  Check,
-  Smartphone,
-  Monitor,
-  Share,
-  Plus,
-  Chrome,
-  
-} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +7,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Check,
+  Chrome,
+  Download,
+  Monitor,
+  Plus,
+  Share,
+  Smartphone,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -167,7 +166,7 @@ export const InstallButton = () => {
           title: "Install App on Desktop",
           steps: [
             "1. Click the install icon in your browser's address bar",
-            "2. Or use the menu and select 'Install Space Style Barber'",
+            "2. Or use the menu and select 'Install Barber App'",
             "3. Click 'Install' to add to your desktop",
           ],
           icon: <Monitor className="h-6 w-6" />,
@@ -202,7 +201,7 @@ export const InstallButton = () => {
       <Button
         onClick={handleInstall}
         disabled={isInstalling}
-        className="gap-2 bg-blue-600 hover:bg-blue-700"
+        className="gap-2 border border-purple-600 bg-transparent text-purple-600 hover:bg-purple-100 p-5 active:bg-pink-600"
       >
         {platform === "ios" ? (
           <Share className="h-4 w-4" />

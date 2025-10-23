@@ -12,7 +12,6 @@ export default function ServiceWorkerRegister() {
             registration
           );
 
-          // Handle updates
           registration.addEventListener("updatefound", () => {
             const newWorker = registration.installing;
             console.log("🔄 New Service Worker installing...");
@@ -42,5 +41,5 @@ export default function ServiceWorkerRegister() {
     }
   }, []);
 
-  return null; // Component tidak render apapun
+  return null;
 }

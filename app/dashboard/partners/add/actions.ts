@@ -220,3 +220,71 @@ export async function deleteStaff(staffId: number) {
     throw new Error("Failed to delete user");
   }
 }
+
+
+export async function createStaff(formData: FormData) {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const role = (formData.get("role") as string) || null;
+  const phone = (formData.get("phone") as string) || null;
+  const commissionRate =
+    Number.parseFloat(formData.get("commissionRate") as string) || 0;
+  const levelId = formData.get("levelId")
+    ? Number.parseInt(formData.get("levelId") as string)
+    : null;
+  const isActive = formData.get("isActive") === "on";
+
+  try {
+    await prisma.staff.create({
+      data: {
+        name,
+        email,
+        role,
+        phone,
+        commissionRate,
+        levelId,
+        isActive,
+      },
+    });
+
+    revalidatePath("/staff");
+  } catch (error) {
+    console.error("Error creating staff:", error);
+    throw new Error("Failed to create staff");
+  }
+}
+
+export async function updateStaff(id: number, formData: FormData) {
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const role = (formData.get("role") as string) || null;
+  const phone = (formData.get("phone") as string) || null;
+  const commissionRate =
+    Number.parseFloat(formData.get("commissionRate") as string) || 0;
+  const levelId = formData.get("levelId")
+    ? Number.parseInt(formData.get("levelId") as string)
+    : null;
+  const isActive = formData.get("isActive") === "on";
+
+  try {
+    await prisma.staff.update({
+      where: { id },
+      data: {
+        name,
+        email,
+        role,
+        phone,
+        commissionRate,
+        levelId,
+        isActive,
+      },
+    });
+
+    revalidatePath("/staff");
+    revalidatePath(`/staff/${id}`);
+  } catch (error) {
+    console.error("Error updating staff:", error);
+    throw new Error("Failed to update staff");
+  }
+}
+

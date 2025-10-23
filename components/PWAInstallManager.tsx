@@ -2,6 +2,7 @@
 
 import { Download, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -26,31 +27,24 @@ export default function PWAInstallManager() {
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Check if it's iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(iOS);
 
-    // Check if app is already installed (standalone mode)
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as any).standalone ||
       document.referrer.includes("android-app://");
     setIsStandalone(standalone);
 
-    // Listen for the beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       console.log("beforeinstallprompt event fired");
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Save the event so it can be triggered later
       setDeferredPrompt(e);
-      // Show our custom install banner
       setShowInstallBanner(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // Listen for app installed event
     window.addEventListener("appinstalled", () => {
       console.log("PWA was installed");
       setShowInstallBanner(false);
@@ -68,10 +62,8 @@ export default function PWAInstallManager() {
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
 
-    // Show the install prompt
     deferredPrompt.prompt();
 
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
 
     if (outcome === "accepted") {
@@ -80,31 +72,27 @@ export default function PWAInstallManager() {
       console.log("User dismissed the install prompt");
     }
 
-    // Clear the deferredPrompt variable
     setDeferredPrompt(null);
     setShowInstallBanner(false);
   };
 
   const handleDismiss = () => {
     setShowInstallBanner(false);
-    // Store dismissal in localStorage to avoid showing again for a while
     localStorage.setItem("pwa-install-dismissed", Date.now().toString());
   };
 
-  // Don't show banner if already installed or on iOS (different UX)
   if (isStandalone || !showInstallBanner) {
     return null;
   }
 
-  // iOS Install Instructions
   if (isIOS) {
     return (
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
         <div className="flex items-start gap-3">
-          <Download className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+          <Download className="w-6 h-6 text-purple-600 flex-shrink-0 mt-1" />
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 mb-1">
-              Install Space Style Barber
+              Install Barber App
             </h3>
             <p className="text-sm text-gray-600 mb-3">
               To install this app on your iPhone, tap the Share button and then
@@ -125,58 +113,55 @@ export default function PWAInstallManager() {
               <span>then "Add to Home Screen"</span>
             </div>
           </div>
-          <button
+          <Button
             onClick={handleDismiss}
             className="text-gray-400 hover:text-gray-600"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
-  // Android/Desktop Install Banner
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg z-50">
-      <div className="flex items-center justify-between">
+    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 shadow-lg z-50">
+      <div className="flex items-center justify-between max-w-5xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <Download className="w-6 h-6 text-blue-600" />
+            <Download className="w-6 h-6 text-purple-600" />
           </div>
           <div>
-            <h3 className="font-semibold">Install Space Style Barber</h3>
+            <h3 className="font-semibold">Install Barber App</h3>
             <p className="text-sm opacity-90">
-              Get the full app experience with offline access
+              Get the full app experience with faster access
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={handleInstallClick}
-            className="bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+            className="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-100 transition-colors"
           >
             Install
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleDismiss}
             className="text-white/80 hover:text-white p-2"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   );
 }
 
-// Hook untuk mengecek status PWA
 export function usePWAStatus() {
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
-    // Check if PWA is already installed
     const checkInstalled = () => {
       const isStandalone =
         window.matchMedia("(display-mode: standalone)").matches ||
@@ -187,7 +172,6 @@ export function usePWAStatus() {
 
     checkInstalled();
 
-    // Listen for beforeinstallprompt to know if installable
     const handleBeforeInstallPrompt = () => {
       setIsInstallable(true);
     };

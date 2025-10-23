@@ -1,0 +1,1 @@
+(()=>{"use strict";self.fallback=async e=>"document"===e.destination?caches.match("/app/offline/page.tsx",{ignoreSearch:!0}):Response.error()})();

@@ -24,16 +24,6 @@ export interface Transaction {
   transactionDate: Date;
 }
 
-export function generateTransactionNumber(): string {
-  const now = new Date();
-  const date = now.toISOString().slice(0, 10).replace(/-/g, "");
-  const time = now.toTimeString().slice(0, 8).replace(/:/g, "");
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
-  return `TXN${date}${time}${random}`;
-}
-
 export function calculateTransactionTotals(
   items: TransactionItem[],
   discountPercent = 0,
