@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -8,12 +7,12 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface DeleteButtonProps {
@@ -29,7 +28,7 @@ export function DeleteButton({ id, name, deleteAction }: DeleteButtonProps) {
     setIsLoading(true);
     try {
       await deleteAction(id);
-      toast.success("Service berhasil dihapus!");
+      toast.success(`${name} berhasil dihapus`);
     } catch (error) {
       toast.error("Gagal menghapus service");
     } finally {
@@ -40,28 +39,28 @@ export function DeleteButton({ id, name, deleteAction }: DeleteButtonProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm" disabled={isLoading}>
-          <Trash2 className="h-4 w-4" />
+        <Button variant="outline" size="sm" disabled={isLoading}>
+          <Trash2 className="h-4 w-4 text-red-500" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Hapus Service</AlertDialogTitle>
           <AlertDialogDescription>
-            Apakah Anda yakin ingin menghapus service "{name}"? Tindakan ini
-            tidak dapat dibatalkan.
+            Apakah Anda yakin ingin menghapus <strong>{name}</strong>? Tindakan
+            ini tidak dapat dibatalkan.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
+        <div className="flex gap-2">
           <AlertDialogCancel>Batal</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={isLoading}
+            className="bg-red-600 hover:bg-red-700"
           >
             {isLoading ? "Menghapus..." : "Hapus"}
           </AlertDialogAction>
-        </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );

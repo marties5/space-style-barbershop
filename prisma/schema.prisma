@@ -38,7 +38,6 @@ model Group {
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
   groupRoles GroupRole[]
   menuRoles  MenuRole[]
 
@@ -56,7 +55,6 @@ model Menu {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  // Relations
   parent    Menu?      @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children  Menu[]     @relation("MenuHierarchy")
   menuRoles MenuRole[]
@@ -81,6 +79,8 @@ model GroupRole {
   @@index([groupId], map: "idx_group_roles_group_id")
   @@map("group_roles")
 }
+
+
 
 model MenuRole {
   id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -116,15 +116,14 @@ model Customer {
 }
 
 model Service {
-  id               Int               @id @default(autoincrement())
-  name             String            @db.VarChar(255)
-  price            Decimal           @db.Decimal(10, 2)
-  imageUrl         String?           @map("image_url") @db.VarChar(500)
-  isActive         Boolean           @default(true) @map("is_active")
-  discount         Int?
-  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt        DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  transactionItems TransactionItem[]
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Decimal  @db.Decimal(10, 2)
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+  discount  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("services")
 }
@@ -140,8 +139,6 @@ model Product {
   isActive      Boolean  @default(true) @map("is_active")
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-
-  transactionItems TransactionItem[]
 
   @@map("products")
 }
@@ -216,8 +213,8 @@ model TransactionItem {
   totalPrice    Decimal     @map("total_price") @db.Decimal(10, 2)
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
   transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  service       Service?    @relation(fields: [itemId], references: [id], map: "transaction_items_service_fkey")
-  product       Product?    @relation(fields: [itemId], references: [id], map: "transaction_items_product_fkey")
+
+  // itemName is stored as denormalized data for transaction records
 
   @@index([transactionId], map: "idx_transaction_items_transaction")
   @@map("transaction_items")

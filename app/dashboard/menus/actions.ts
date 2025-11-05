@@ -4,87 +4,184 @@ import { prisma } from "@/lib/prisma";
 import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getCurrentUser } from "../users/actions";
 
-export type menuWithGroups = {
-  id: number;
+export type MenuWithGroups = {
+  id: string;
   name: string;
   path: string | null;
   icon: string | null;
-  parentId: number | null;
-  sort_order: number | null;
+  parentId: string | null;
+  sortOrder: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  groups: Array<{
+  groups?: Array<{
     id: string;
     name: string;
     description: string | null;
   }>;
+  children?: MenuWithGroups[];
 };
 
-export async function getAllMenus(): Promise<menuWithGroups[]> {
-  const currentUser = await getCurrentUser();
-  if (!currentUser) {
-    throw new Error("Unauthorized");
-  }
-  console.log("Current User in getAllMenusWithGroups:", currentUser);
-
-  try {
-    const menus = await prisma.menu.findMany({
-      where: {
-        isActive: true,
-      },
-    });
-
-    return menus as [];
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error("Failed to fetch users");
-  }
-}
-
-export async function getAllMenusWithGroups(): Promise<menuWithGroups[]> {
-  try {
-    const menus = await prisma.menu.findMany({
-      where: {
-        isActive: true,
-      },
-    });
-
-    return menus as [];
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw new Error("Failed to fetch users");
-  }
-}
-
-export async function getStaffById(staffId: number) {
-  try {
-    const staff = await prisma.staff.findUnique({
-      where: {
-        id: staffId,
-        isActive: true,
-      },
-    });
-
-    if (!staff) return null;
-
-    return staff;
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    throw new Error("Failed to fetch user");
-  }
-}
-
-const createManualStaffSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1).max(100),
-  phone: z.string().optional(),
+// Schema validasi
+const menuSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  path: z.string().optional(),
+  icon: z.string().optional(),
+  parentId: z.string().optional(),
+  sortOrder: z.number().int().min(0).optional(),
 });
 
-export async function createManualStaff(
-  staffData: z.infer<typeof createManualStaffSchema>
+const menuPermissionSchema = z.object({
+  groupId: z.string().min(1, "Group is required"),
+  canRead: z.boolean().optional(),
+  canWrite: z.boolean().optional(),
+  canUpdate: z.boolean().optional(),
+  canDelete: z.boolean().optional(),
+});
+
+// Get all menus
+export async function getAllMenus(): Promise<MenuWithGroups[]> {
+  try {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unauthorized");
+    }
+
+    const menus = await prisma.menu.findMany({
+      where: {
+        isActive: true,
+      },
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        },
+        menuRoles: {
+          include: {
+            group: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        sortOrder: "asc",
+      },
+    });
+
+    return menus.map((menu) => ({
+      id: menu.id,
+      name: menu.name,
+      path: menu.path,
+      icon: menu.icon,
+      parentId: menu.parentId,
+      sortOrder: menu.sortOrder,
+      isActive: menu.isActive,
+      createdAt: menu.createdAt,
+      updatedAt: menu.updatedAt,
+      groups: menu.menuRoles.map((mr) => mr.group),
+      children: menu.children,
+    }));
+  } catch (error) {
+    console.error("Error fetching menus:", error);
+    throw new Error("Failed to fetch menus");
+  }
+}
+
+// Get menu by ID
+export async function getMenuById(menuId: string) {
+  try {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unauthorized");
+    }
+
+    const menu = await prisma.menu.findUnique({
+      where: {
+        id: menuId,
+        isActive: true,
+      },
+      include: {
+        children: {
+          where: { isActive: true },
+          orderBy: { sortOrder: "asc" },
+        },
+        menuRoles: {
+          include: {
+            group: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!menu) return null;
+
+    return {
+      id: menu.id,
+      name: menu.name,
+      path: menu.path,
+      icon: menu.icon,
+      parentId: menu.parentId,
+      sortOrder: menu.sortOrder,
+      isActive: menu.isActive,
+      createdAt: menu.createdAt,
+      updatedAt: menu.updatedAt,
+      groups: menu.menuRoles.map((mr) => mr.group),
+      children: menu.children,
+    };
+  } catch (error) {
+    console.error("Error fetching menu:", error);
+    throw new Error("Failed to fetch menu");
+  }
+}
+
+// Create menu
+export async function createMenu(data: z.infer<typeof menuSchema>) {
+  try {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unauthorized");
+    }
+
+    const validatedData = menuSchema.parse(data);
+
+    const menu = await prisma.menu.create({
+      data: {
+        name: validatedData.name,
+        path: validatedData.path,
+        icon: validatedData.icon,
+        parentId: validatedData.parentId,
+        sortOrder: validatedData.sortOrder || 0,
+        isActive: true,
+      },
+    });
+
+    revalidatePath("/dashboard/menu");
+    return { success: true, data: menu };
+  } catch (error) {
+    console.error("Error creating menu:", error);
+    if (error instanceof z.ZodError) {
+      throw new Error(error.errors[0].message);
+    }
+    throw new Error("Failed to create menu");
+  }
+}
+
+// Update menu
+export async function updateMenu(
+  menuId: string,
+  data: Partial<z.infer<typeof menuSchema>>
 ) {
   try {
     const clerkUser = await currentUser();
@@ -92,57 +189,129 @@ export async function createManualStaff(
       throw new Error("Unauthorized");
     }
 
-    const validatedData = createManualStaffSchema.parse(staffData);
-
-    const existingUser = await prisma.staff.findFirst({
-      where: {
-        email: validatedData.email,
-        isActive: true,
-      },
-    });
-
-    if (existingUser) {
-      throw new Error("User with this email already exists");
-    }
-
-    const staff = await prisma.staff.create({
+    const menu = await prisma.menu.update({
+      where: { id: menuId },
       data: {
-        email: validatedData.email,
-        name: validatedData.name,
-        phone: validatedData.phone,
-        isActive: true,
+        name: data.name,
+        path: data.path,
+        icon: data.icon,
+        parentId: data.parentId,
+        sortOrder: data.sortOrder,
       },
     });
 
-    revalidatePath("/partner");
-    return staff;
+    revalidatePath("/dashboard/menu");
+    return { success: true, data: menu };
   } catch (error) {
-    console.error("Error creating manual staff:", error);
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error("Failed to create staff");
+    console.error("Error updating menu:", error);
+    throw new Error("Failed to update menu");
   }
 }
 
-export async function deleteStaff(staffId: number) {
+// Delete menu (soft delete)
+export async function deleteMenu(menuId: string) {
   try {
     const clerkUser = await currentUser();
     if (!clerkUser) {
       throw new Error("Unauthorized");
     }
 
-    await prisma.staff.delete({
-      where: { id: staffId },
+    // Check if menu has children
+    const childrenCount = await prisma.menu.count({
+      where: {
+        parentId: menuId,
+        isActive: true,
+      },
     });
 
-    revalidatePath("/users");
+    if (childrenCount > 0) {
+      throw new Error("Cannot delete menu with active children");
+    }
+
+    await prisma.menu.update({
+      where: { id: menuId },
+      data: { isActive: false },
+    });
+
+    revalidatePath("/dashboard/menu");
     return { success: true };
   } catch (error) {
-    console.error("Error deleting user:", error);
+    console.error("Error deleting menu:", error);
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error("Failed to delete user");
+    throw new Error("Failed to delete menu");
+  }
+}
+
+// Assign menu to group
+export async function assignMenuToGroup(
+  menuId: string,
+  data: z.infer<typeof menuPermissionSchema>
+) {
+  try {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unauthorized");
+    }
+
+    const validatedData = menuPermissionSchema.parse(data);
+
+    const menuRole = await prisma.menuRole.upsert({
+      where: {
+        groupId_menuId: {
+          groupId: validatedData.groupId,
+          menuId,
+        },
+      },
+      update: {
+        canRead: validatedData.canRead ?? true,
+        canWrite: validatedData.canWrite ?? false,
+        canUpdate: validatedData.canUpdate ?? false,
+        canDelete: validatedData.canDelete ?? false,
+      },
+      create: {
+        groupId: validatedData.groupId,
+        menuId,
+        canRead: validatedData.canRead ?? true,
+        canWrite: validatedData.canWrite ?? false,
+        canUpdate: validatedData.canUpdate ?? false,
+        canDelete: validatedData.canDelete ?? false,
+      },
+    });
+
+    revalidatePath("/dashboard/menu");
+    return { success: true, data: menuRole };
+  } catch (error) {
+    console.error("Error assigning menu to group:", error);
+    if (error instanceof z.ZodError) {
+      throw new Error(error.errors[0].message);
+    }
+    throw new Error("Failed to assign menu to group");
+  }
+}
+
+// Remove menu from group
+export async function removeMenuFromGroup(menuId: string, groupId: string) {
+  try {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      throw new Error("Unauthorized");
+    }
+
+    await prisma.menuRole.delete({
+      where: {
+        groupId_menuId: {
+          groupId,
+          menuId,
+        },
+      },
+    });
+
+    revalidatePath("/dashboard/menu");
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing menu from group:", error);
+    throw new Error("Failed to remove menu from group");
   }
 }

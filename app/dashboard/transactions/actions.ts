@@ -21,7 +21,6 @@ interface CreateTransactionData {
   notes?: string;
 }
 
-// Legacy interfaces untuk compatibility
 interface TransactionData {
   userId: string;
   good: {
@@ -65,7 +64,19 @@ export async function createTransaction(data: CreateTransactionData) {
     if (!data.items || data.items.length === 0) {
       throw new Error("Transaction harus memiliki minimal 1 item");
     }
-    console.log("data ubmited : ", data);
+
+    for (const item of data.items) {
+      if (
+        !item.id ||
+        !item.name ||
+        !item.price ||
+        !item.count ||
+        !item.item_type
+      ) {
+        throw new Error(`Item tidak lengkap: ${JSON.stringify(item)}`);
+      }
+    }
+
     const hasService = data.items.some((item) => item.item_type === "service");
     const hasProduct = data.items.some((item) => item.item_type === "product");
 
@@ -89,6 +100,41 @@ export async function createTransaction(data: CreateTransactionData) {
     const transactionNumber = generateTransactionNumber();
 
     const result = await prisma.$transaction(async (tx) => {
+      for (const item of data.items) {
+        const itemId = Number.parseInt(item.id);
+
+        if (item.item_type === "service") {
+          const existingService = await tx.service.findUnique({
+            where: { id: itemId },
+          });
+
+          if (!existingService) {
+            await tx.service.create({
+              data: {
+                id: itemId,
+                name: item.name,
+                price: item.price,
+                isActive: true,
+              },
+            });
+          }
+        } else if (item.item_type === "product") {
+          const existingProduct = await tx.product.findUnique({
+            where: { id: itemId },
+          });
+
+          if (!existingProduct) {
+            await tx.product.create({
+              data: {
+                id: itemId,
+                name: item.name,
+                price: item.price,
+                isActive: true,
+              },
+            });
+          }
+        }
+      }
       const transaction = await tx.transaction.create({
         data: {
           transactionNumber: transactionNumber,
@@ -208,7 +254,6 @@ export async function createTransaction(data: CreateTransactionData) {
     };
   }
 }
-
 export async function createTransactionSingle(
   data: TransactionDataWithPayment
 ): Promise<TransactionResponse> {
@@ -402,6 +447,7 @@ export async function createTransactionFallback(
         itemId: data.good.id,
         itemName: data.good.name,
         quantity: 1,
+
         unitPrice: data.good.price,
         totalPrice: data.good.price,
       },

@@ -25,9 +25,6 @@ export type UserWithGroups = {
 export async function getAllUsersWithGroups(): Promise<UserWithGroups[]> {
   try {
     const users = await prisma.user.findMany({
-      where: {
-        isActive: true,
-      },
       include: {
         groupRoles: {
           include: {
@@ -55,6 +52,24 @@ export async function getAllUsersWithGroups(): Promise<UserWithGroups[]> {
       ...user,
       groups: user.groupRoles.map((gr) => gr.group),
     }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Failed to fetch users");
+  }
+}
+
+export async function getAllActiveUser() {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return users;
   } catch (error) {
     console.error("Error fetching users:", error);
     throw new Error("Failed to fetch users");

@@ -4,13 +4,13 @@ import DisableZoom from "@/components/DisabledZoom";
 import PWAInstallManager from "@/components/PWAInstallManager";
 import ServiceWorkerRegister from "@/components/ServiceWorker";
 import { Toaster } from "@/components/ui/sonner";
+import Providers from "@/lib/ProggressBarProviders";
 import { templateMetadata } from "@/public/metadata";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Appearance } from "@clerk/types";
 import { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Providers from "@/lib/ProggressBarProviders";
 
 export const metadata: Metadata = {
   ...templateMetadata,
@@ -187,7 +187,6 @@ export default function RootLayout({
       <ClerkProvider appearance={clerkAppearanceObject}>
         <body className={`min-h-screen flex flex-col antialiased `}>
           <Providers> {children}</Providers>
-          {/* {children} */}
           <DevtoolsWatcher />
           <Toaster />
           <ServiceWorkerRegister />

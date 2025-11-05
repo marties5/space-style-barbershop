@@ -7,10 +7,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { syncUserWithDatabase } from "@/lib/auth-utils";
-import { sql } from "@/lib/database";
 import { currentUser } from "@clerk/nextjs/server";
-import { BarChart3, Menu, Shield, Users } from "lucide-react";
+import { BarChart3, Shield, Users } from "lucide-react";
 import { redirect } from "next/navigation";
+import { getAllGroups } from "./groups/actions";
+import { getAllActiveUser, getAllUsersWithGroups } from "./users/actions";
 
 export default async function DashboardPage() {
   const clerkUser = await currentUser();
@@ -29,23 +30,12 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  // Get dashboard statistics
-  const [userCount, groupCount, menuCount, activeUsers] = await Promise.all([
-    sql`SELECT COUNT(id) as count FROM users WHERE is_active = true`,
-    sql`SELECT COUNT(id) as count FROM groups WHERE is_active = true`,
-    sql`SELECT COUNT(id) as count FROM menus WHERE is_active = true`,
-    sql`SELECT COUNT(id) as count FROM users WHERE is_active = true AND updated_at > NOW() - INTERVAL '30 days'`,
-  ]);
-
-  const stats = {
-    totalUsers: userCount[0]?.count || 0,
-    totalGroups: groupCount[0]?.count || 0,
-    totalMenus: menuCount[0]?.count || 0,
-    activeUsers: activeUsers[0]?.count || 0,
-  };
+  const alluser = await getAllUsersWithGroups();
+  const activeUser = await getAllActiveUser();
+  const allGroups = await getAllGroups();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       <InstallButton />
       <div>
         <h1 className="text-3xl font-bold text-balance">Dashboard</h1>
@@ -54,14 +44,14 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold">{alluser.length}</div>
             <p className="text-xs text-muted-foreground">Registered users</p>
           </CardContent>
         </Card>
@@ -72,7 +62,7 @@ export default async function DashboardPage() {
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeUsers}</div>
+            <div className="text-2xl font-bold">{activeUser.length}</div>
             <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>
@@ -83,24 +73,12 @@ export default async function DashboardPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalGroups}</div>
+            <div className="text-2xl font-bold">{allGroups.length}</div>
             <p className="text-xs text-muted-foreground">Role groups</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Menu Items</CardTitle>
-            <Menu className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalMenus}</div>
-            <p className="text-xs text-muted-foreground">Navigation items</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>

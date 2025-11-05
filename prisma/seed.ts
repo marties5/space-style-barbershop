@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Starting database seed...");
 
-  // Seed Groups
+  // 🧩 1. Seed Groups
   const groups = await Promise.all([
     prisma.group.upsert({
       where: { name: "superadmin" },
@@ -32,66 +32,64 @@ async function main() {
       },
     }),
   ]);
-
   console.log("✅ Groups seeded");
 
-  // Seed Menus
-const menus = await Promise.all([
-  prisma.menu.upsert({
-    where: { path: "/dashboard" }, // sekarang valid
-    update: {},
-    create: {
-      name: "Dashboard",
-      path: "/dashboard",
-      icon: "LayoutDashboard",
-      sortOrder: 1,
-    },
-  }),
-  prisma.menu.upsert({
-    where: { path: "/dashboard/users" },
-    update: {},
-    create: {
-      name: "Users",
-      path: "/dashboard/users",
-      icon: "Users",
-      sortOrder: 2,
-    },
-  }),
-  prisma.menu.upsert({
-    where: { path: "/dashboard/groups" },
-    update: {},
-    create: {
-      name: "Groups",
-      path: "/dashboard/groups",
-      icon: "Shield",
-      sortOrder: 3,
-    },
-  }),
-  prisma.menu.upsert({
-    where: { path: "/dashboard/menus" },
-    update: {},
-    create: {
-      name: "Menus",
-      path: "/dashboard/menus",
-      icon: "Menu",
-      sortOrder: 4,
-    },
-  }),
-  prisma.menu.upsert({
-    where: { path: "/profile" },
-    update: {},
-    create: {
-      name: "Profile",
-      path: "/profile",
-      icon: "User",
-      sortOrder: 5,
-    },
-  }),
-]);
-
+  // 🧩 2. Seed Menus
+  const menus = await Promise.all([
+    prisma.menu.upsert({
+      where: { path: "/dashboard" },
+      update: {},
+      create: {
+        name: "Dashboard",
+        path: "/dashboard",
+        icon: "LayoutDashboard",
+        sortOrder: 1,
+      },
+    }),
+    prisma.menu.upsert({
+      where: { path: "/dashboard/users" },
+      update: {},
+      create: {
+        name: "Users",
+        path: "/dashboard/users",
+        icon: "Users",
+        sortOrder: 2,
+      },
+    }),
+    prisma.menu.upsert({
+      where: { path: "/dashboard/groups" },
+      update: {},
+      create: {
+        name: "Groups",
+        path: "/dashboard/groups",
+        icon: "Shield",
+        sortOrder: 3,
+      },
+    }),
+    prisma.menu.upsert({
+      where: { path: "/dashboard/menus" },
+      update: {},
+      create: {
+        name: "Menus",
+        path: "/dashboard/menus",
+        icon: "Menu",
+        sortOrder: 4,
+      },
+    }),
+    prisma.menu.upsert({
+      where: { path: "/profile" },
+      update: {},
+      create: {
+        name: "Profile",
+        path: "/profile",
+        icon: "User",
+        sortOrder: 5,
+      },
+    }),
+  ]);
   console.log("✅ Menus seeded");
 
-  // Seed Staff
+  // 🧩 3. Seed Staff
   const staff = await Promise.all([
     prisma.staff.upsert({
       where: { id: 1 },
@@ -99,7 +97,7 @@ const menus = await Promise.all([
       create: {
         name: "Wahyudi",
         role: "Senior Barber",
-        commissionRate: 150,
+        commissionRate: new Prisma.Decimal(150),
       },
     }),
     prisma.staff.upsert({
@@ -108,7 +106,7 @@ const menus = await Promise.all([
       create: {
         name: "Suneo",
         role: "Barber",
-        commissionRate: 120,
+        commissionRate: new Prisma.Decimal(120),
       },
     }),
     prisma.staff.upsert({
@@ -117,21 +115,20 @@ const menus = await Promise.all([
       create: {
         name: "Djarwo",
         role: "Junior Barber",
-        commissionRate: 100,
+        commissionRate: new Prisma.Decimal(100),
       },
     }),
   ]);
-
   console.log("✅ Staff seeded");
 
-  // Seed Services
+  // 🧩 4. Seed Services
   const services = await Promise.all([
     prisma.service.upsert({
       where: { id: 1 },
       update: {},
       create: {
         name: "Hair Cut",
-        price: 25000,
+        price: new Prisma.Decimal(25000),
         imageUrl: "/hair-cut-barber.png",
       },
     }),
@@ -140,7 +137,7 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Trim",
-        price: 20000,
+        price: new Prisma.Decimal(20000),
         imageUrl: "/hair-trim-scissors.png",
       },
     }),
@@ -149,7 +146,7 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Shaving",
-        price: 15000,
+        price: new Prisma.Decimal(15000),
         imageUrl: "/shaving-razor.png",
       },
     }),
@@ -158,23 +155,22 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Coloring",
-        price: 75000,
+        price: new Prisma.Decimal(75000),
         imageUrl: "/hair-coloring-dye.png",
       },
     }),
   ]);
-
   console.log("✅ Services seeded");
 
-  // Seed Products
+  // 🧩 5. Seed Products
   const products = await Promise.all([
     prisma.product.upsert({
       where: { id: 1 },
       update: {},
       create: {
         name: "Pomade",
-        price: 50000,
-        costPrice: 35000,
+        price: new Prisma.Decimal(50000),
+        costPrice: new Prisma.Decimal(35000),
         stockQuantity: 45,
         imageUrl: "/pomade-hair-product-gold.png",
       },
@@ -184,8 +180,8 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Vitamin",
-        price: 40000,
-        costPrice: 28000,
+        price: new Prisma.Decimal(40000),
+        costPrice: new Prisma.Decimal(28000),
         stockQuantity: 32,
         imageUrl: "/hair-vitamin-spray-bottle.png",
       },
@@ -195,8 +191,8 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Tonic",
-        price: 30000,
-        costPrice: 20000,
+        price: new Prisma.Decimal(30000),
+        costPrice: new Prisma.Decimal(20000),
         stockQuantity: 28,
         imageUrl: "/hair-tonic-green-bottle.png",
       },
@@ -206,8 +202,8 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Shampoo",
-        price: 35000,
-        costPrice: 25000,
+        price: new Prisma.Decimal(35000),
+        costPrice: new Prisma.Decimal(25000),
         stockQuantity: 18,
         imageUrl: "/black-shampoo-bottle.png",
       },
@@ -217,8 +213,8 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Powder A",
-        price: 75000,
-        costPrice: 50000,
+        price: new Prisma.Decimal(75000),
+        costPrice: new Prisma.Decimal(50000),
         stockQuantity: 12,
         imageUrl: "/hair-powder-green-bottle.png",
       },
@@ -228,17 +224,16 @@ const menus = await Promise.all([
       update: {},
       create: {
         name: "Hair Powder D",
-        price: 95000,
-        costPrice: 65000,
+        price: new Prisma.Decimal(95000),
+        costPrice: new Prisma.Decimal(65000),
         stockQuantity: 8,
         imageUrl: "/hair-powder-green-bottle.png",
       },
     }),
   ]);
-
   console.log("✅ Products seeded");
 
-  // Seed Menu Roles - Grant superadmin access to all menus
+  // 🧩 6. Menu Roles
   const superadminGroup = groups.find((g) => g.name === "superadmin");
   const partnerGroup = groups.find((g) => g.name === "partner");
 
@@ -261,9 +256,9 @@ const menus = await Promise.all([
         },
       });
     }
+    console.log("✅ Superadmin menu roles seeded");
   }
 
-  // Grant partner group access to Dashboard and Profile only
   if (partnerGroup) {
     const allowedMenus = menus.filter((m) =>
       ["Dashboard", "Profile"].includes(m.name)
@@ -286,18 +281,19 @@ const menus = await Promise.all([
         },
       });
     }
+    console.log("✅ Partner menu roles seeded");
   }
 
-  console.log("✅ Menu roles seeded");
+  console.log("🌱 Seeding complete!");
+}
 
- 
-
+// ✅ Correct way to call main
 main()
   .then(async () => {
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e);
+    console.error("❌ Error during seeding:", e);
     await prisma.$disconnect();
     process.exit(1);
   });

@@ -1,11 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -13,32 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import * as z from "zod";
-
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { createService, Service, updateService } from "../actions";
+import { createService, type Service, updateService } from "../actions";
 
 interface ServiceFormProps {
   initialData?: Service;
   isEditing?: boolean;
 }
-
-export const serviceSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Nama service wajib diisi")
-    .max(255, "Nama terlalu panjang"),
-  price: z.number().min(0, "Harga tidak boleh negatif"),
-  image_url: z
-    .string()
-    .url("URL gambar tidak valid")
-    .max(500, "URL terlalu panjang"),
-  is_active: z.boolean().default(true),
-  discount: z.number().min(0).max(100).optional().nullable(),
-});
-
-export type ServiceFormData = z.infer<typeof serviceSchema>;
 
 export function ServiceForm({
   initialData,
@@ -50,22 +31,33 @@ export function ServiceForm({
   const handleSubmit = async (formData: FormData) => {
     setIsLoading(true);
     try {
+      let result;
       if (isEditing && initialData) {
-        await updateService(initialData.id, formData);
+        result = await updateService(initialData.id, formData);
       } else {
-        await createService(formData);
+        result = await createService(formData);
       }
-      toast.success(
-        isEditing
-          ? "Service berhasil diupdate!"
-          : "Service berhasil ditambahkan!"
-      );
+
+      if (result?.success) {
+        toast.success(
+          isEditing
+            ? "Service berhasil diupdate!"
+            : "Service berhasil ditambahkan!"
+        );
+
+        setTimeout(() => {
+          router.push("/dashboard/services");
+        }, 800); // biar toast sempat muncul
+      } else {
+        toast.error(result?.message || "Terjadi kesalahan");
+      }
     } catch (error) {
       toast.error("Terjadi kesalahan saat menyimpan service");
     } finally {
       setIsLoading(false);
     }
   };
+  const [isActive, setIsActive] = useState(initialData?.isActive ?? true); // use camelCase to match Prisma model
 
   return (
     <Card className="max-w-2xl mx-auto">
@@ -78,7 +70,14 @@ export function ServiceForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={handleSubmit} className="space-y-6">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            handleSubmit(formData);
+          }}
+          className="space-y-6"
+        >
           <div className="space-y-2">
             <Label htmlFor="name">Nama Service</Label>
             <Input
@@ -105,12 +104,12 @@ export function ServiceForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image_url">URL Gambar</Label>
+            <Label htmlFor="imageUrl">URL Gambar</Label>
             <Input
-              id="image_url"
-              name="image_url"
+              id="imageUrl"
+              name="imageUrl"
               type="url"
-              defaultValue={initialData?.image_url || ""}
+              defaultValue={initialData?.imageUrl || ""}
               placeholder="https://example.com/image.jpg"
               required
             />
@@ -130,16 +129,12 @@ export function ServiceForm({
           </div>
 
           <div className="flex items-center space-x-2">
-            <Switch
-              id="is_active"
-              name="is_active"
-              defaultChecked={initialData?.is_active ?? true}
-            />
-            <Label htmlFor="is_active">Service Aktif</Label>
+            <Switch checked={isActive} onCheckedChange={setIsActive} />
+            <Label>Service Aktif</Label>
             <input
               type="hidden"
-              name="is_active"
-              value={initialData?.is_active ?? true ? "true" : "false"}
+              name="isActive"
+              value={isActive ? "true" : "false"}
             />
           </div>
 
